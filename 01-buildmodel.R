@@ -93,9 +93,21 @@ bayes_model <-
              prior_intercept = prior_dist, 
              prior = prior_dist)
 
-#train the model which does not work as of 20240402
+#train the model
 bayes_fit <- 
   bayes_model %>% 
   fit(formula = width ~ initial_volume * food_regime, data = urchins)
 
 print(bayes_fit, digits = 5)
+
+#plot the bayes data
+bayes_plot_data <- 
+  new_points %>% 
+  bind_cols(predict(bayes_fit, new_data = new_points)) %>% 
+  bind_cols(predict(bayes_fit, new_data = new_points, type = "conf_int"))
+
+ggplot(bayes_plot_data, aes(x = food_regime)) + 
+  geom_point(aes(y = .pred)) + 
+  geom_errorbar(aes(ymin = .pred_lower, ymax = .pred_upper), width = .2) + 
+  labs(y = "urchin size") + 
+  ggtitle("Bayesian model with t(1) prior distribution")
